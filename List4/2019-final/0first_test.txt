@@ -1,0 +1,28 @@
+DECLARE
+a, b, c, d, e, t(0:4)
+BEGIN
+
+a ASSIGN 0;
+b ASSIGN 1;
+c ASSIGN 2;
+d ASSIGN 3;
+e ASSIGN 4;
+
+t(0) ASSIGN 10;
+t(1) ASSIGN 20;
+t(2) ASSIGN -10;
+t(3) ASSIGN -20;
+
+t(e) ASSIGN t(a) TIMES t(b);
+WRITE t(4);
+t(e) ASSIGN t(a) TIMES t(d);
+WRITE t(4);
+
+WRITE 99;
+
+t(e) ASSIGN t(c) TIMES t(d);
+WRITE t(e);
+t(e) ASSIGN t(c) TIMES t(b);
+WRITE t(e);
+
+END

@@ -1,0 +1,83 @@
+%{
+#include <iostream>
+#include <string>
+#include "SymbolsTable.hpp"
+#include "Compiler.hpp"
+using namespace std;
+
+int yylex();
+extern SymbolsTable * symbolsTable;
+extern Compiler * compiler;
+void yyerror(char const *);
+%}
+
+%union
+{
+	long long num;
+	const char * str;
+}
+
+%token DECLARE
+%token KW_BEGIN
+%token END
+
+%token READ
+%token WRITE
+
+%token ASSIGN
+
+%token PLUS
+%token MINUS
+%token TIMES
+%token DIV
+%token MOD
+
+%token <str> PIDENTIFIER
+%token <num> NUMBER
+
+%type <str> identifier
+%type <num> expression
+
+%%
+program:
+	DECLARE {symbolsTable -> varDeclaration("#copy");} declarations KW_BEGIN commands END {compiler -> endProgram();}
+|	{symbolsTable -> varDeclaration("#copy");} KW_BEGIN commands END {compiler -> endProgram();}
+
+declarations:
+	declarations ',' PIDENTIFIER {symbolsTable -> varDeclaration($3);}
+|	declarations ',' PIDENTIFIER '(' NUMBER ':' NUMBER ')' {symbolsTable -> varDeclaration($3, $5, $7);}
+|	PIDENTIFIER {symbolsTable -> varDeclaration($1);}
+|	PIDENTIFIER '(' NUMBER ':' NUMBER ')' {symbolsTable -> varDeclaration($1, $3, $5);}
+
+commands:
+	commands command {compiler -> clear();}
+|	command {compiler -> clear();}
+
+command:
+	identifier {compiler -> placeToStore($1); compiler -> clear();} ASSIGN expression ';' {compiler -> assign($1, $4);}
+|	READ identifier ';' {compiler -> read($2);}
+|	WRITE value ';' {compiler -> write();}
+
+expression:
+	value {compiler -> evaluateExpression();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} PLUS value {compiler -> evaluateExpression(); compiler -> add();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} MINUS value {compiler -> evaluateExpression(); compiler -> sub();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} TIMES value {compiler -> evaluateExpression(); compiler -> mul();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} DIV value {compiler -> evaluateExpression(); compiler -> div();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} MOD value {compiler -> evaluateExpression(); compiler -> mod();}
+
+value:
+	NUMBER {compiler -> generateConstant($1); compiler -> setValueNumber();}
+|	identifier {compiler -> setIdentifierFlag(); compiler -> setIdentifier($1);}
+
+identifier:
+	PIDENTIFIER {compiler -> setIdentifier($1);}
+|	PIDENTIFIER '(' PIDENTIFIER ')' {compiler -> setIndexIdentifier($3);}
+|	PIDENTIFIER '(' NUMBER ')' {compiler -> setNumberIdentifier($3);}
+
+%%
+
+void yyerror(char const * s)
+{
+	cerr << s << endl;
+}
