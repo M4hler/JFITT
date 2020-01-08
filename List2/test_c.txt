@@ -1,0 +1,17 @@
+A
+// comment
+B
+// comm\
+	ent
+//	tab_comment
+C
+/*multi
+	line
+	comment */
+D
+
+/**
+*doc_comment
+*/
+E
+

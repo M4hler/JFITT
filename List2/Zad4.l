@@ -93,7 +93,7 @@ OPERATOR	"+"|"-"|"*"|"^"|"/"|"%"
 "%"		{
 		int x = pop();
 		int y = pop();
-		if (x != 0) push(y/x);
+		if (x != 0) push(y%x);
 		else {
 			invalid_number = true;
 		}

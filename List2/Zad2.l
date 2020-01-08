@@ -1,6 +1,10 @@
 %x COMMENT ONEDASH TWODASHES
 
 %%
+<INITIAL>=\".*\" {
+	BEGIN(INITIAL);
+	yymore();
+	}
 <INITIAL>\<!-- {
 	BEGIN(COMMENT);
 	yymore();
