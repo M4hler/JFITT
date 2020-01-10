@@ -20,7 +20,7 @@ SymbolsTable::SymbolsTable()
 {
 	varName = new vector<string>();
 	initialised = new vector<bool>();
-	value = new vector<long long>();
+	//value = new vector<long long>();
 	memoryLocationStart = new vector<long long>();
 	memoryLocationEnd = new vector<long long>();
 	isArray = new vector<bool>();
@@ -57,6 +57,10 @@ void SymbolsTable::varDeclaration(string varIdentifier, long long rangeStart, lo
 		for(int i = rangeStart; i <= rangeEnd; i++)
 		{
 			declare(varIdentifier + "(" + to_string(i) + ")", 0, 0, false);
+			/*if(i % 1000000 == 0)
+			{
+				cout << varIdentifier + "(" + to_string(i) + ")" << endl;
+			}*/
 		}
 	}
 	catch(AlreadyDeclared alreadyDeclared)
@@ -84,13 +88,14 @@ void SymbolsTable::checkIfDeclared(string varIdentifier)
 
 void SymbolsTable::showTable()
 {
-	cout << "Name\tInit\tValue\tMemSt\tMemEnd\tIsArray\tFstInd\tLastInd" << endl;
+	//cout << "Name\tInit\tValue\tMemSt\tMemEnd\tIsArray\tFstInd\tLastInd" << endl;
+	cout << "Name\tInit\tMemSt\tMemEnd\tIsArray\tFstInd\tLastInd" << endl;
 
 	for(int i = 0; i < varName -> size(); i++)
 	{
 			cout << varName -> at(i) << " " 
 			<< "\t" << initialised -> at(i) << " "
-			<< "\t" << value -> at(i) << " "
+			//<< "\t" << value -> at(i) << " "
 			<< "\t" << memoryLocationStart -> at(i) << " " 
 			<< "\t" << memoryLocationEnd -> at(i) << " "
 			<< "\t" << isArray -> at(i) << " "
@@ -215,7 +220,7 @@ void SymbolsTable::declare(string varIdentifier, long long rangeStart, long long
 {
 	varName -> push_back(varIdentifier);
 	initialised -> push_back(false); //variable hasn't been asigned
-	value -> push_back(0); //default value
+	//value -> push_back(0); //default value
 	memoryLocationStart -> push_back(firstFreeMemoryCell);
 	memoryLocationEnd -> push_back(firstFreeMemoryCell + rangeEnd - rangeStart);
 	isArray -> push_back(amIArray);

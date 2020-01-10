@@ -38,6 +38,12 @@ cmteat [^]]*
 "DIV" {return DIV;}
 "MOD" {return MOD;}
 
+"IF" {return IF;}
+"THEN" {return THEN;}
+"ENDIF" {return ENDIF;}
+
+"EQ" {return EQ;}
+
 [_a-z]+ {yylval.str = (char *)strdup(yytext); return PIDENTIFIER;}
 -?[0-9]+ {yylval.num = atoi(yytext); return NUMBER;}
 

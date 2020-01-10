@@ -21,6 +21,9 @@ public:
 	void evaluateExpression();
 	void setLeftSideOption(int);
 	void copy();
+
+	void condEq();
+
 	void add();
 	void sub();
 	void mul();

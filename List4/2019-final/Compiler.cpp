@@ -567,6 +567,11 @@ void Compiler::copy()
 	writeToFile(expr);
 }
 
+void Compiler::condEq()
+{
+
+}
+
 void Compiler::add()
 {
 	if(identifier == "")
@@ -837,16 +842,905 @@ void Compiler::mul()
 	}
 }
 
-//TODO implement
 void Compiler::div()
 {
-	cout << "test" << endl;
+	long long freeCell = symbolsTable -> getFreeMemoryCell();
+
+	if(identifier == "")
+	{
+		//decision tree
+		string expr = "STORE " + to_string(freeCell) + "\n";
+		expr += "SUB 0\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD " + to_string(freeCell) + "\n";
+		expr += "JZERO " + to_string(generatedLines + 67) + "\n"; //div by 0
+
+		expr += "JNEG " + to_string(generatedLines + 7) + "\n"; //right side is negative
+		expr += "JUMP " + to_string(generatedLines + 10) + "\n"; //right side is positive
+
+		expr += "LOAD 1\n"; //load left side
+		expr += "JNEG " + to_string(generatedLines + 52) + "\n"; //left is neg, right is neg
+		expr += "JUMP " + to_string(generatedLines + 28) + "\n"; //left is pos, right is neg
+
+		expr += "LOAD 1\n";
+		expr += "JNEG " + to_string(generatedLines + 40) + "\n"; //left is neg, right is pos
+		//left is pos, right is pos	
+
+		expr += "LOAD " + to_string(freeCell) + "\n";
+
+		writeToFile(expr);
+
+		//left side is positive, right side is positive
+		//18 / 5
+		int l1 = generatedLines;
+		expr = "LOAD 1\n";
+		expr += "JZERO " + to_string(l1 + 13) + "\n";
+		expr += "JNEG " + to_string(l1 + 10) + "\n";
+		expr += "SUB " + to_string(freeCell) + "\n";
+		expr += "STORE 1\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "INC\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD 1\n";
+		expr += "JUMP " + to_string(l1 + 1) + "\n";
+
+		expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+		expr += "DEC\n";
+		//jneg additional jump to omit load beneath
+		expr += "JUMP " + to_string(l1 + 14) + "\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "JUMP " + to_string(l1 + 54) + "\n"; //skip other variants
+		writeToFile(expr);
+
+		//left side is positive, right side is negative
+		//18 / -5
+		int l2 = generatedLines;
+		expr = "LOAD 1\n";
+		expr += "JZERO " + to_string(l2 + 10) + "\n";
+		expr += "JNEG " + to_string(l2 + 10) + "\n";
+		expr += "ADD " + to_string(freeCell) + "\n";
+		expr += "STORE 1\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "DEC\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD 1\n";
+		expr += "JUMP " + to_string(l2 + 1) + "\n";
+
+		//expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+		//expr += "INC\n";
+		//expr += "JUMP " + to_string(l2 + 14) + "\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "JUMP " + to_string(l2 + 39) + "\n"; //skip other variants
+		writeToFile(expr);
+
+		//left side is negative, right side is positive
+		//-18 / 5
+		int l3 = generatedLines;
+		expr = "LOAD 1\n";
+		expr += "JZERO " + to_string(l3 + 10) + "\n";
+		expr += "JPOS " + to_string(l3 + 10) + "\n";
+		expr += "ADD " + to_string(freeCell) + "\n";
+		expr += "STORE 1\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "DEC\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD 1\n";
+		expr += "JUMP " + to_string(l3 + 1) + "\n";
+
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "JUMP " + to_string(l3 + 27) + "\n"; //skip other variants
+		writeToFile(expr);
+
+		//left side is negative, right side is negative
+		//-18 / -5
+		int l4 = generatedLines;
+		expr = "LOAD 1\n";
+		expr += "JZERO " + to_string(l4 + 13) + "\n";
+		expr += "JPOS " + to_string(l4 + 10) + "\n";
+		expr += "SUB " + to_string(freeCell) + "\n";
+		expr += "STORE 1\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "INC\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD 1\n";
+		expr += "JUMP " + to_string(l4 + 1) + "\n";
+
+		expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+		expr += "DEC\n";
+		expr += "JUMP " + to_string(l4 + 14) + "\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "JUMP " + to_string(l4 + 15) + "\n";
+		writeToFile(expr);
+	}
+
+	try
+	{
+		if(symbolsTable -> checkIfArray(identifier) == true)
+		{
+			if(indexIdentifier != "")
+			{
+				symbolsTable -> checkIfDeclared(indexIdentifier);
+				symbolsTable -> checkIfInitialized(indexIdentifier);
+
+				//decision tree
+				string expr = "STORE " + to_string(freeCell) + "\n";
+				expr += "SUB 0\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD " + to_string(freeCell) + "\n";
+				expr += "JZERO " + to_string(generatedLines + 67) + "\n"; //div by 0
+
+				expr += "JNEG " + to_string(generatedLines + 7) + "\n"; //right side is negative
+				expr += "JUMP " + to_string(generatedLines + 10) + "\n"; //right side is positive
+
+				expr += "LOAD 1\n"; //load left side
+				expr += "JNEG " + to_string(generatedLines + 52) + "\n"; //left is neg, right is neg
+				expr += "JUMP " + to_string(generatedLines + 28) + "\n"; //left is pos, right is neg
+
+				expr += "LOAD 1\n";
+				expr += "JNEG " + to_string(generatedLines + 40) + "\n"; //left is neg, right is pos
+				//left is pos, right is pos	
+
+				expr += "LOAD " + to_string(freeCell) + "\n";
+
+				writeToFile(expr);
+
+				//left side is positive, right side is positive
+				//18 / 5
+				int l1 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l1 + 13) + "\n";
+				expr += "JNEG " + to_string(l1 + 10) + "\n";
+				expr += "SUB " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "INC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l1 + 1) + "\n";
+
+				expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+				expr += "DEC\n";
+				//jneg additional jump to omit load beneath
+				expr += "JUMP " + to_string(l1 + 14) + "\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l1 + 54) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is positive, right side is negative
+				//18 / -5
+				int l2 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l2 + 10) + "\n";
+				expr += "JNEG " + to_string(l2 + 10) + "\n";
+				expr += "ADD " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "DEC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l2 + 1) + "\n";
+
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+				//expr += "INC\n";
+				//expr += "JUMP " + to_string(l2 + 14) + "\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l2 + 39) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is negative, right side is positive
+				//-18 / 5
+				int l3 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l3 + 10) + "\n";
+				expr += "JPOS " + to_string(l3 + 10) + "\n";
+				expr += "ADD " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "DEC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l3 + 1) + "\n";
+
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l3 + 27) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is negative, right side is negative
+				//-18 / -5
+				int l4 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l4 + 13) + "\n";
+				expr += "JPOS " + to_string(l4 + 10) + "\n";
+				expr += "SUB " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "INC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l4 + 1) + "\n";
+
+				expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+				expr += "DEC\n";
+				expr += "JUMP " + to_string(l4 + 14) + "\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l4 + 15) + "\n";
+				writeToFile(expr);
+			}
+			else
+			{
+				//decision tree
+				string expr = "STORE " + to_string(freeCell) + "\n";
+				expr += "SUB 0\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD " + to_string(freeCell) + "\n";
+				expr += "JZERO " + to_string(generatedLines + 67) + "\n"; //div by 0
+
+				expr += "JNEG " + to_string(generatedLines + 7) + "\n"; //right side is negative
+				expr += "JUMP " + to_string(generatedLines + 10) + "\n"; //right side is positive
+
+				expr += "LOAD 1\n"; //load left side
+				expr += "JNEG " + to_string(generatedLines + 52) + "\n"; //left is neg, right is neg
+				expr += "JUMP " + to_string(generatedLines + 28) + "\n"; //left is pos, right is neg
+
+				expr += "LOAD 1\n";
+				expr += "JNEG " + to_string(generatedLines + 40) + "\n"; //left is neg, right is pos
+				//left is pos, right is pos	
+
+				expr += "LOAD " + to_string(freeCell) + "\n";
+
+				writeToFile(expr);
+
+				//left side is positive, right side is positive
+				//18 / 5
+				int l1 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l1 + 13) + "\n";
+				expr += "JNEG " + to_string(l1 + 10) + "\n";
+				expr += "SUB " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "INC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l1 + 1) + "\n";
+
+				expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+				expr += "DEC\n";
+				//jneg additional jump to omit load beneath
+				expr += "JUMP " + to_string(l1 + 14) + "\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l1 + 54) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is positive, right side is negative
+				//18 / -5
+				int l2 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l2 + 10) + "\n";
+				expr += "JNEG " + to_string(l2 + 10) + "\n";
+				expr += "ADD " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "DEC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l2 + 1) + "\n";
+
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+				//expr += "INC\n";
+				//expr += "JUMP " + to_string(l2 + 14) + "\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l2 + 39) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is negative, right side is positive
+				//-18 / 5
+				int l3 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l3 + 10) + "\n";
+				expr += "JPOS " + to_string(l3 + 10) + "\n";
+				expr += "ADD " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "DEC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l3 + 1) + "\n";
+
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l3 + 27) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is negative, right side is negative
+				//-18 / -5
+				int l4 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l4 + 13) + "\n";
+				expr += "JPOS " + to_string(l4 + 10) + "\n";
+				expr += "SUB " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "INC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l4 + 1) + "\n";
+
+				expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+				expr += "DEC\n";
+				expr += "JUMP " + to_string(l4 + 14) + "\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l4 + 15) + "\n";
+				writeToFile(expr);
+			}
+		}
+		else
+		{
+			//decision tree
+			string expr = "STORE " + to_string(freeCell) + "\n";
+			expr += "SUB 0\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD " + to_string(freeCell) + "\n";
+			expr += "JZERO " + to_string(generatedLines + 67) + "\n"; //div by 0
+
+			expr += "JNEG " + to_string(generatedLines + 7) + "\n"; //right side is negative
+			expr += "JUMP " + to_string(generatedLines + 10) + "\n"; //right side is positive
+
+			expr += "LOAD 1\n"; //load left side
+			expr += "JNEG " + to_string(generatedLines + 52) + "\n"; //left is neg, right is neg
+			expr += "JUMP " + to_string(generatedLines + 28) + "\n"; //left is pos, right is neg
+
+			expr += "LOAD 1\n";
+			expr += "JNEG " + to_string(generatedLines + 40) + "\n"; //left is neg, right is pos
+			//left is pos, right is pos	
+
+			expr += "LOAD " + to_string(freeCell) + "\n";
+
+			writeToFile(expr);
+
+			//left side is positive, right side is positive
+			//18 / 5
+			int l1 = generatedLines;
+			expr = "LOAD 1\n";
+			expr += "JZERO " + to_string(l1 + 13) + "\n";
+			expr += "JNEG " + to_string(l1 + 10) + "\n";
+			expr += "SUB " + to_string(freeCell) + "\n";
+			expr += "STORE 1\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "INC\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD 1\n";
+			expr += "JUMP " + to_string(l1 + 1) + "\n";
+
+			expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+			expr += "DEC\n";
+			//jneg additional jump to omit load beneath
+			expr += "JUMP " + to_string(l1 + 14) + "\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "JUMP " + to_string(l1 + 54) + "\n"; //skip other variants
+			writeToFile(expr);
+
+			//left side is positive, right side is negative
+			//18 / -5
+			int l2 = generatedLines;
+			expr = "LOAD 1\n";
+			expr += "JZERO " + to_string(l2 + 10) + "\n";
+			expr += "JNEG " + to_string(l2 + 10) + "\n";
+			expr += "ADD " + to_string(freeCell) + "\n";
+			expr += "STORE 1\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "DEC\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD 1\n";
+			expr += "JUMP " + to_string(l2 + 1) + "\n";
+
+			//expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+			//expr += "INC\n";
+			//expr += "JUMP " + to_string(l2 + 14) + "\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "JUMP " + to_string(l2 + 39) + "\n"; //skip other variants
+			writeToFile(expr);
+
+			//left side is negative, right side is positive
+			//-18 / 5
+			int l3 = generatedLines;
+			expr = "LOAD 1\n";
+			expr += "JZERO " + to_string(l3 + 10) + "\n";
+			expr += "JPOS " + to_string(l3 + 10) + "\n";
+			expr += "ADD " + to_string(freeCell) + "\n";
+			expr += "STORE 1\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "DEC\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD 1\n";
+			expr += "JUMP " + to_string(l3 + 1) + "\n";
+
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "JUMP " + to_string(l3 + 27) + "\n"; //skip other variants
+			writeToFile(expr);
+
+			//left side is negative, right side is negative
+			//-18 / -5
+			int l4 = generatedLines;
+			expr = "LOAD 1\n";
+			expr += "JZERO " + to_string(l4 + 13) + "\n";
+			expr += "JPOS " + to_string(l4 + 10) + "\n";
+			expr += "SUB " + to_string(freeCell) + "\n";
+			expr += "STORE 1\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "INC\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD 1\n";
+			expr += "JUMP " + to_string(l4 + 1) + "\n";
+
+			expr += "LOAD " + to_string(freeCell + 1) + "\n"; //without this - mod
+			expr += "DEC\n";
+			expr += "JUMP " + to_string(l4 + 14) + "\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "JUMP " + to_string(l4 + 15) + "\n";
+			writeToFile(expr);
+		}
+	}
+	catch(UndeclaredVariable undeclaredVariable)
+	{
+		cout << undeclaredVariable.message << endl;
+	}
+	catch(BadIndex badIndex)
+	{
+		cout << badIndex.message << endl;
+	}
+	catch(UninitializedVariable unitializedVariable)
+	{
+		cout << unitializedVariable.message << endl;
+	}
 }
 
-//TODO implement - same as div, result is in different place
 void Compiler::mod()
 {
+	long long freeCell = symbolsTable -> getFreeMemoryCell();
 
+	if(identifier == "")
+	{
+		//decision tree
+		string expr = "STORE " + to_string(freeCell) + "\n";
+		expr += "SUB 0\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD " + to_string(freeCell) + "\n";
+		expr += "JZERO " + to_string(generatedLines + 59) + "\n"; //div by 0
+
+		expr += "JNEG " + to_string(generatedLines + 7) + "\n"; //right side is negative
+		expr += "JUMP " + to_string(generatedLines + 10) + "\n"; //right side is positive
+
+		expr += "LOAD 1\n"; //load left side
+		expr += "JNEG " + to_string(generatedLines + 48) + "\n"; //left is neg, right is neg
+		expr += "JUMP " + to_string(generatedLines + 26) + "\n"; //left is pos, right is neg
+
+		expr += "LOAD 1\n";
+		expr += "JNEG " + to_string(generatedLines + 37) + "\n"; //left is neg, right is pos
+		//left is pos, right is pos	
+
+		expr += "LOAD " + to_string(freeCell) + "\n";
+
+		writeToFile(expr);
+
+		//left side is positive, right side is positive
+		//18 / 5
+		int l1 = generatedLines;
+		expr = "LOAD 1\n";
+		expr += "JZERO " + to_string(l1 + 11) + "\n";
+		expr += "JNEG " + to_string(l1 + 10) + "\n";
+		expr += "SUB " + to_string(freeCell) + "\n";
+		expr += "STORE 1\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "INC\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD 1\n";
+		expr += "JUMP " + to_string(l1 + 1) + "\n";
+
+		expr += "ADD " + to_string(freeCell) + "\n";
+		//expr += "DEC\n";
+		//jneg additional jump to omit load beneath
+		//expr += "JUMP " + to_string(l1 + 14) + "\n";
+		//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "JUMP " + to_string(l1 + 46) + "\n"; //skip other variants
+		writeToFile(expr);
+
+		//left side is positive, right side is negative
+		//18 / -5
+		int l2 = generatedLines;
+		expr = "LOAD 1\n";
+		expr += "JZERO " + to_string(l2 + 10) + "\n";
+		expr += "JNEG " + to_string(l2 + 10) + "\n";
+		expr += "ADD " + to_string(freeCell) + "\n";
+		expr += "STORE 1\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "DEC\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD 1\n";
+		expr += "JUMP " + to_string(l2 + 1) + "\n";
+
+		//expr += "SUB " + to_string(freeCell) + "\n";
+		//expr += "INC\n";
+		//expr += "JUMP " + to_string(l2 + 14) + "\n";
+		//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "JUMP " + to_string(l2 + 34) + "\n"; //skip other variants
+		writeToFile(expr);
+
+		//left side is negative, right side is positive
+		//-18 / 5
+		int l3 = generatedLines;
+		expr = "LOAD 1\n";
+		expr += "JZERO " + to_string(l3 + 10) + "\n";
+		expr += "JPOS " + to_string(l3 + 10) + "\n";
+		expr += "ADD " + to_string(freeCell) + "\n";
+		expr += "STORE 1\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "DEC\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD 1\n";
+		expr += "JUMP " + to_string(l3 + 1) + "\n";
+
+		//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "JUMP " + to_string(l3 + 23) + "\n"; //skip other variants
+		writeToFile(expr);
+
+		//left side is negative, right side is negative
+		//-18 / -5
+		int l4 = generatedLines;
+		expr = "LOAD 1\n";
+		expr += "JZERO " + to_string(l4 + 11) + "\n";
+		expr += "JPOS " + to_string(l4 + 10) + "\n";
+		expr += "SUB " + to_string(freeCell) + "\n";
+		expr += "STORE 1\n";
+		expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "INC\n";
+		expr += "STORE " + to_string(freeCell + 1) + "\n";
+		expr += "LOAD 1\n";
+		expr += "JUMP " + to_string(l4 + 1) + "\n";
+
+		expr += "ADD " + to_string(freeCell) + "\n";
+		//expr += "DEC\n";
+		//expr += "JUMP " + to_string(l4 + 14) + "\n";
+		//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+		expr += "JUMP " + to_string(l4 + 12) + "\n";
+		writeToFile(expr);
+	}
+
+	try
+	{
+		if(symbolsTable -> checkIfArray(identifier) == true)
+		{
+			if(indexIdentifier != "")
+			{
+				//decision tree
+				string expr = "STORE " + to_string(freeCell) + "\n";
+				expr += "SUB 0\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD " + to_string(freeCell) + "\n";
+				expr += "JZERO " + to_string(generatedLines + 59) + "\n"; //div by 0
+
+				expr += "JNEG " + to_string(generatedLines + 7) + "\n"; //right side is negative
+				expr += "JUMP " + to_string(generatedLines + 10) + "\n"; //right side is positive
+
+				expr += "LOAD 1\n"; //load left side
+				expr += "JNEG " + to_string(generatedLines + 48) + "\n"; //left is neg, right is neg
+				expr += "JUMP " + to_string(generatedLines + 26) + "\n"; //left is pos, right is neg
+
+				expr += "LOAD 1\n";
+				expr += "JNEG " + to_string(generatedLines + 37) + "\n"; //left is neg, right is pos
+				//left is pos, right is pos	
+
+				expr += "LOAD " + to_string(freeCell) + "\n";
+
+				writeToFile(expr);
+
+				//left side is positive, right side is positive
+				//18 / 5
+				int l1 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l1 + 11) + "\n";
+				expr += "JNEG " + to_string(l1 + 10) + "\n";
+				expr += "SUB " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "INC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l1 + 1) + "\n";
+
+				expr += "ADD " + to_string(freeCell) + "\n";
+				//expr += "DEC\n";
+				//jneg additional jump to omit load beneath
+				//expr += "JUMP " + to_string(l1 + 14) + "\n";
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l1 + 46) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is positive, right side is negative
+				//18 / -5
+				int l2 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l2 + 10) + "\n";
+				expr += "JNEG " + to_string(l2 + 10) + "\n";
+				expr += "ADD " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "DEC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l2 + 1) + "\n";
+
+				//expr += "SUB " + to_string(freeCell) + "\n";
+				//expr += "INC\n";
+				//expr += "JUMP " + to_string(l2 + 14) + "\n";
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l2 + 34) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is negative, right side is positive
+				//-18 / 5
+				int l3 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l3 + 10) + "\n";
+				expr += "JPOS " + to_string(l3 + 10) + "\n";
+				expr += "ADD " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "DEC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l3 + 1) + "\n";
+
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l3 + 23) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is negative, right side is negative
+				//-18 / -5
+				int l4 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l4 + 11) + "\n";
+				expr += "JPOS " + to_string(l4 + 10) + "\n";
+				expr += "SUB " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "INC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l4 + 1) + "\n";
+
+				expr += "ADD " + to_string(freeCell) + "\n";
+				//expr += "DEC\n";
+				//expr += "JUMP " + to_string(l4 + 14) + "\n";
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l4 + 12) + "\n";
+				writeToFile(expr);
+			}
+			else
+			{
+				//decision tree
+				string expr = "STORE " + to_string(freeCell) + "\n";
+				expr += "SUB 0\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD " + to_string(freeCell) + "\n";
+				expr += "JZERO " + to_string(generatedLines + 59) + "\n"; //div by 0
+
+				expr += "JNEG " + to_string(generatedLines + 7) + "\n"; //right side is negative
+				expr += "JUMP " + to_string(generatedLines + 10) + "\n"; //right side is positive
+
+				expr += "LOAD 1\n"; //load left side
+				expr += "JNEG " + to_string(generatedLines + 48) + "\n"; //left is neg, right is neg
+				expr += "JUMP " + to_string(generatedLines + 26) + "\n"; //left is pos, right is neg
+
+				expr += "LOAD 1\n";
+				expr += "JNEG " + to_string(generatedLines + 37) + "\n"; //left is neg, right is pos
+				//left is pos, right is pos	
+
+				expr += "LOAD " + to_string(freeCell) + "\n";
+
+				writeToFile(expr);
+
+				//left side is positive, right side is positive
+				//18 / 5
+				int l1 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l1 + 11) + "\n";
+				expr += "JNEG " + to_string(l1 + 10) + "\n";
+				expr += "SUB " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "INC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l1 + 1) + "\n";
+
+				expr += "ADD " + to_string(freeCell) + "\n";
+				//expr += "DEC\n";
+				//jneg additional jump to omit load beneath
+				//expr += "JUMP " + to_string(l1 + 14) + "\n";
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l1 + 46) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is positive, right side is negative
+				//18 / -5
+				int l2 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l2 + 10) + "\n";
+				expr += "JNEG " + to_string(l2 + 10) + "\n";
+				expr += "ADD " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "DEC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l2 + 1) + "\n";
+
+				//expr += "SUB " + to_string(freeCell) + "\n";
+				//expr += "INC\n";
+				//expr += "JUMP " + to_string(l2 + 14) + "\n";
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l2 + 34) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is negative, right side is positive
+				//-18 / 5
+				int l3 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l3 + 10) + "\n";
+				expr += "JPOS " + to_string(l3 + 10) + "\n";
+				expr += "ADD " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "DEC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l3 + 1) + "\n";
+
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l3 + 23) + "\n"; //skip other variants
+				writeToFile(expr);
+
+				//left side is negative, right side is negative
+				//-18 / -5
+				int l4 = generatedLines;
+				expr = "LOAD 1\n";
+				expr += "JZERO " + to_string(l4 + 11) + "\n";
+				expr += "JPOS " + to_string(l4 + 10) + "\n";
+				expr += "SUB " + to_string(freeCell) + "\n";
+				expr += "STORE 1\n";
+				expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "INC\n";
+				expr += "STORE " + to_string(freeCell + 1) + "\n";
+				expr += "LOAD 1\n";
+				expr += "JUMP " + to_string(l4 + 1) + "\n";
+
+				expr += "ADD " + to_string(freeCell) + "\n";
+				//expr += "DEC\n";
+				//expr += "JUMP " + to_string(l4 + 14) + "\n";
+				//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+				expr += "JUMP " + to_string(l4 + 12) + "\n";
+				writeToFile(expr);
+			}
+		}
+		else
+		{
+			//decision tree
+			string expr = "STORE " + to_string(freeCell) + "\n";
+			expr += "SUB 0\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD " + to_string(freeCell) + "\n";
+			expr += "JZERO " + to_string(generatedLines + 59) + "\n"; //div by 0
+
+			expr += "JNEG " + to_string(generatedLines + 7) + "\n"; //right side is negative
+			expr += "JUMP " + to_string(generatedLines + 10) + "\n"; //right side is positive
+
+			expr += "LOAD 1\n"; //load left side
+			expr += "JNEG " + to_string(generatedLines + 48) + "\n"; //left is neg, right is neg
+			expr += "JUMP " + to_string(generatedLines + 26) + "\n"; //left is pos, right is neg
+
+			expr += "LOAD 1\n";
+			expr += "JNEG " + to_string(generatedLines + 37) + "\n"; //left is neg, right is pos
+			//left is pos, right is pos	
+
+			expr += "LOAD " + to_string(freeCell) + "\n";
+
+			writeToFile(expr);
+
+			//left side is positive, right side is positive
+			//18 / 5
+			int l1 = generatedLines;
+			expr = "LOAD 1\n";
+			expr += "JZERO " + to_string(l1 + 11) + "\n";
+			expr += "JNEG " + to_string(l1 + 10) + "\n";
+			expr += "SUB " + to_string(freeCell) + "\n";
+			expr += "STORE 1\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "INC\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD 1\n";
+			expr += "JUMP " + to_string(l1 + 1) + "\n";
+
+			expr += "ADD " + to_string(freeCell) + "\n";
+			//expr += "DEC\n";
+			//jneg additional jump to omit load beneath
+			//expr += "JUMP " + to_string(l1 + 14) + "\n";
+			//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "JUMP " + to_string(l1 + 46) + "\n"; //skip other variants
+			writeToFile(expr);
+
+			//left side is positive, right side is negative
+			//18 / -5
+			int l2 = generatedLines;
+			expr = "LOAD 1\n";
+			expr += "JZERO " + to_string(l2 + 10) + "\n";
+			expr += "JNEG " + to_string(l2 + 10) + "\n";
+			expr += "ADD " + to_string(freeCell) + "\n";
+			expr += "STORE 1\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "DEC\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD 1\n";
+			expr += "JUMP " + to_string(l2 + 1) + "\n";
+
+			//expr += "SUB " + to_string(freeCell) + "\n";
+			//expr += "INC\n";
+			//expr += "JUMP " + to_string(l2 + 14) + "\n";
+			//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "JUMP " + to_string(l2 + 34) + "\n"; //skip other variants
+			writeToFile(expr);
+
+			//left side is negative, right side is positive
+			//-18 / 5
+			int l3 = generatedLines;
+			expr = "LOAD 1\n";
+			expr += "JZERO " + to_string(l3 + 10) + "\n";
+			expr += "JPOS " + to_string(l3 + 10) + "\n";
+			expr += "ADD " + to_string(freeCell) + "\n";
+			expr += "STORE 1\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "DEC\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD 1\n";
+			expr += "JUMP " + to_string(l3 + 1) + "\n";
+
+			//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "JUMP " + to_string(l3 + 23) + "\n"; //skip other variants
+			writeToFile(expr);
+
+			//left side is negative, right side is negative
+			//-18 / -5
+			int l4 = generatedLines;
+			expr = "LOAD 1\n";
+			expr += "JZERO " + to_string(l4 + 11) + "\n";
+			expr += "JPOS " + to_string(l4 + 10) + "\n";
+			expr += "SUB " + to_string(freeCell) + "\n";
+			expr += "STORE 1\n";
+			expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "INC\n";
+			expr += "STORE " + to_string(freeCell + 1) + "\n";
+			expr += "LOAD 1\n";
+			expr += "JUMP " + to_string(l4 + 1) + "\n";
+
+			expr += "ADD " + to_string(freeCell) + "\n";
+			//expr += "DEC\n";
+			//expr += "JUMP " + to_string(l4 + 14) + "\n";
+			//expr += "LOAD " + to_string(freeCell + 1) + "\n";
+			expr += "JUMP " + to_string(l4 + 12) + "\n";
+			writeToFile(expr);
+		}
+	}
+	catch(UndeclaredVariable undeclaredVariable)
+	{
+		cout << undeclaredVariable.message << endl;
+	}
+	catch(BadIndex badIndex)
+	{
+		cout << badIndex.message << endl;
+	}
+	catch(UninitializedVariable unitializedVariable)
+	{
+		cout << unitializedVariable.message << endl;
+	}
 }
 
 //private

@@ -29,5 +29,5 @@ int main(int argc, char ** argv)
 		yyparse();
 	}
 
-	symbolsTable -> showTable();
+	//symbolsTable -> showTable();
 }

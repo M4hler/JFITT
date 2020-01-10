@@ -11,7 +11,6 @@ public:
 	void checkIfDeclared(string);
 	//void checkIfDeclared(string, long long);
 	void showTable();
-	//void changeVarValue(string, long long);
 	long long getVarMemoryLocation(string);
 	void checkIfInitialized(string);
 	bool checkIfArray(string);
@@ -19,12 +18,11 @@ public:
 	void initVariable(string);
 	long long getFreeMemoryCell();
 	long long getArrayFirstIndex(string);
-	//long long getValueOfVar(string);
 
 private:
 	vector<string> * varName;
 	vector<bool> * initialised;
-	vector<long long> * value;
+	//vector<long long> * value;
 	vector<long long> * memoryLocationStart;
 	vector<long long> * memoryLocationEnd;
 	vector<bool> * isArray;

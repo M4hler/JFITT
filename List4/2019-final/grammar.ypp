@@ -32,6 +32,12 @@ void yyerror(char const *);
 %token DIV
 %token MOD
 
+%token IF
+%token THEN
+%token ENDIF
+
+%token EQ
+
 %token <str> PIDENTIFIER
 %token <num> NUMBER
 
@@ -55,6 +61,7 @@ commands:
 
 command:
 	identifier {compiler -> placeToStore($1); compiler -> clear();} ASSIGN expression ';' {compiler -> assign($1, $4);}
+|	IF condition THEN commands ENDIF {cout << "test" << endl;}
 |	READ identifier ';' {compiler -> read($2);}
 |	WRITE value ';' {compiler -> write();}
 
@@ -65,6 +72,9 @@ expression:
 |	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} TIMES value {compiler -> evaluateExpression(); compiler -> mul();}
 |	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} DIV value {compiler -> evaluateExpression(); compiler -> div();}
 |	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} MOD value {compiler -> evaluateExpression(); compiler -> mod();}
+
+condition:
+	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} EQ value {compiler -> evaluateExpression(); compiler -> condEq();}
 
 value:
 	NUMBER {compiler -> generateConstant($1); compiler -> setValueNumber();}
