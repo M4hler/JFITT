@@ -64,8 +64,11 @@ extern int yydebug;
     THEN = 270,
     ENDIF = 271,
     EQ = 272,
-    PIDENTIFIER = 273,
-    NUMBER = 274
+    NEQ = 273,
+    LE = 274,
+    GE = 275,
+    PIDENTIFIER = 276,
+    NUMBER = 277
   };
 #endif
 
@@ -78,7 +81,7 @@ union YYSTYPE
 	long long num;
 	const char * str;
 
-#line 82 "grammar.hpp"
+#line 85 "grammar.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

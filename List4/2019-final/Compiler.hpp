@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 using namespace std;
 
 class Compiler
@@ -23,6 +24,11 @@ public:
 	void copy();
 
 	void condEq();
+	void condNeq();
+	void condLe();
+	void condGe();
+	void endIf();
+	void replaceJumpLocations(FILE *, FILE *);
 
 	void add();
 	void sub();
@@ -39,6 +45,7 @@ private:
 	long long storePlace;
 	bool valueNumber;
 	int leftSideOption;
+	vector<long long> * jumpLocations;
 
 	void writeToFile(string);
 };

@@ -43,6 +43,9 @@ cmteat [^]]*
 "ENDIF" {return ENDIF;}
 
 "EQ" {return EQ;}
+"NEQ" {return NEQ;}
+"LE" {return LE;}
+"GE" {return GE;}
 
 [_a-z]+ {yylval.str = (char *)strdup(yytext); return PIDENTIFIER;}
 -?[0-9]+ {yylval.num = atoi(yytext); return NUMBER;}

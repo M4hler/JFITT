@@ -37,6 +37,9 @@ void yyerror(char const *);
 %token ENDIF
 
 %token EQ
+%token NEQ
+%token LE
+%token GE
 
 %token <str> PIDENTIFIER
 %token <num> NUMBER
@@ -61,7 +64,7 @@ commands:
 
 command:
 	identifier {compiler -> placeToStore($1); compiler -> clear();} ASSIGN expression ';' {compiler -> assign($1, $4);}
-|	IF condition THEN commands ENDIF {cout << "test" << endl;}
+|	IF condition {compiler -> clear();} THEN commands ENDIF {compiler -> endIf();}
 |	READ identifier ';' {compiler -> read($2);}
 |	WRITE value ';' {compiler -> write();}
 
@@ -75,6 +78,9 @@ expression:
 
 condition:
 	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} EQ value {compiler -> evaluateExpression(); compiler -> condEq();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} NEQ value {compiler -> evaluateExpression(); compiler -> condNeq();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} LE value {compiler -> evaluateExpression(); compiler -> condLe();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} GE value {compiler -> evaluateExpression(); compiler -> condGe();}
 
 value:
 	NUMBER {compiler -> generateConstant($1); compiler -> setValueNumber();}

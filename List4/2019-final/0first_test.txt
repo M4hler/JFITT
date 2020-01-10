@@ -1,10 +1,21 @@
 [ IF ]
 DECLARE
-	a
+	a, b
 BEGIN
-	IF 2 EQ 0 THEN
-		a ASSIGN 2;
+
+	a ASSIGN 8;
+	b ASSIGN 8;
+
+	WRITE a;
+	WRITE b;
+
+	IF a LE b THEN
+		a ASSIGN 20;
 	ENDIF
 
-	WRITE a;	
+	[IF b GE a THEN
+		a ASSIGN 30;
+	ENDIF]
+
+	WRITE a;
 END
