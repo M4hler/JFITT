@@ -40,12 +40,15 @@ cmteat [^]]*
 
 "IF" {return IF;}
 "THEN" {return THEN;}
+"ELSE" {return ELSE;}
 "ENDIF" {return ENDIF;}
 
 "EQ" {return EQ;}
 "NEQ" {return NEQ;}
 "LE" {return LE;}
 "GE" {return GE;}
+"LEQ" {return LEQ;}
+"GEQ" {return GEQ;}
 
 [_a-z]+ {yylval.str = (char *)strdup(yytext); return PIDENTIFIER;}
 -?[0-9]+ {yylval.num = atoi(yytext); return NUMBER;}

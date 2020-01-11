@@ -23,10 +23,13 @@ public:
 	void setLeftSideOption(int);
 	void copy();
 
+	void addJump();
 	void condEq();
 	void condNeq();
 	void condLe();
 	void condGe();
+	void condLeq();
+	void condGeq();
 	void endIf();
 	void replaceJumpLocations(FILE *, FILE *);
 

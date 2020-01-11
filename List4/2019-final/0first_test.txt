@@ -1,21 +1,17 @@
 [ IF ]
 DECLARE
-	a, b
+	a, b, c(1:4), d
 BEGIN
-
-	a ASSIGN 8;
-	b ASSIGN 8;
-
-	WRITE a;
-	WRITE b;
-
+	a ASSIGN 9;
+	b ASSIGN 9;
+	d ASSIGN 1;
+	
 	IF a LE b THEN
-		a ASSIGN 20;
+		d ASSIGN 10;
+	ELSE
+		d ASSIGN 20;
 	ENDIF
 
-	[IF b GE a THEN
-		a ASSIGN 30;
-	ENDIF]
-
-	WRITE a;
+	WRITE d;
+	WRITE 5;
 END

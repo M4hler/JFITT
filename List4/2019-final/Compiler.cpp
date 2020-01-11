@@ -595,6 +595,13 @@ void Compiler::replaceJumpLocations(FILE * outFile, FILE * file)
 	}
 }
 
+void Compiler::addJump()
+{
+	string expr = "JUMP #flag" + to_string(flagNumber) + "\n";
+	//flagNumber++;
+	writeToFile(expr);
+}
+
 void Compiler::endIf()
 {
 	//cout << generatedLines << endl;
@@ -609,6 +616,7 @@ void Compiler::condEq()
 		expr += "JNEG #flag" + to_string(flagNumber) + "\n";
 		expr += "JPOS #flag" + to_string(flagNumber) + "\n";
 		writeToFile(expr);
+		clear();
 		flagNumber++;
 		return;
 	}
@@ -656,6 +664,7 @@ void Compiler::condEq()
 		cout << unitializedVariable.message << endl;
 	}
 
+	clear();
 	flagNumber++;
 }
 
@@ -666,6 +675,7 @@ void Compiler::condNeq()
 		string expr = "SUB 1\n";
 		expr += "JZERO #flag" + to_string(flagNumber) + "\n";
 		writeToFile(expr);
+		clear();
 		flagNumber++;
 		return;
 	}
@@ -710,6 +720,7 @@ void Compiler::condNeq()
 		cout << unitializedVariable.message << endl;
 	}
 
+	clear();
 	flagNumber++;
 }
 
@@ -721,6 +732,7 @@ void Compiler::condLe()
 		expr += "JNEG #flag" + to_string(flagNumber) + "\n";
 		expr += "JZERO #flag" + to_string(flagNumber) + "\n";
 		writeToFile(expr);
+		clear();
 		flagNumber++;
 		return;
 	}
@@ -768,6 +780,7 @@ void Compiler::condLe()
 		cout << unitializedVariable.message << endl;
 	}
 
+	clear();
 	flagNumber++;
 }
 
@@ -779,6 +792,7 @@ void Compiler::condGe()
 		expr += "JPOS #flag" + to_string(flagNumber) + "\n";
 		expr += "JZERO #flag" + to_string(flagNumber) + "\n";
 		writeToFile(expr);
+		clear();
 		flagNumber++;
 		return;
 	}
@@ -826,6 +840,119 @@ void Compiler::condGe()
 		cout << unitializedVariable.message << endl;
 	}
 
+	clear();
+	flagNumber++;
+}
+
+void Compiler::condLeq()
+{
+	if(identifier == "")
+	{
+		string expr = "SUB 1\n";
+		expr += "JPOS #flag" + to_string(flagNumber) + "\n";
+		writeToFile(expr);
+		clear();
+		flagNumber++;
+		return;
+	}
+
+	try
+	{
+		if(symbolsTable -> checkIfArray(identifier) == true)
+		{
+			if(indexIdentifier != "")
+			{
+				symbolsTable -> checkIfDeclared(indexIdentifier);
+				symbolsTable -> checkIfInitialized(indexIdentifier);
+
+				string expr = "SUB 1\n";
+				expr += "JPOS #flag" + to_string(flagNumber) + "\n";
+				writeToFile(expr);
+			}
+			else
+			{
+				string expr = "SUB 1\n";
+				expr += "JPOS #flag" + to_string(flagNumber) + "\n";
+				writeToFile(expr);
+			}
+		}
+		else
+		{
+			string expr = "SUB 1\n";
+			expr += "JPOS #flag" + to_string(flagNumber) + "\n";
+			writeToFile(expr);
+		}
+	}
+	catch(UndeclaredVariable undeclaredVariable)
+	{
+		cout << undeclaredVariable.message << endl;
+	}
+	catch(BadIndex badIndex)
+	{
+		cout << badIndex.message << endl;
+	}
+	catch(UninitializedVariable unitializedVariable)
+	{
+		cout << unitializedVariable.message << endl;
+	}
+
+	clear();
+	flagNumber++;
+}
+
+void Compiler::condGeq()
+{
+	if(identifier == "")
+	{
+		string expr = "SUB 1\n";
+		expr += "JNEG #flag" + to_string(flagNumber) + "\n";
+		writeToFile(expr);
+		clear();
+		flagNumber++;
+		return;
+	}
+
+	try
+	{
+		if(symbolsTable -> checkIfArray(identifier) == true)
+		{
+			if(indexIdentifier != "")
+			{
+				symbolsTable -> checkIfDeclared(indexIdentifier);
+				symbolsTable -> checkIfInitialized(indexIdentifier);
+
+				string expr = "SUB 1\n";
+				expr += "JNEG #flag" + to_string(flagNumber) + "\n";
+				writeToFile(expr);
+			}
+			else
+			{
+				string expr = "SUB 1\n";
+				expr += "JNEG #flag" + to_string(flagNumber) + "\n";
+				writeToFile(expr);
+			}
+		}
+		else
+		{
+			string expr = "SUB 1\n";
+			expr += "JNEG #flag" + to_string(flagNumber) + "\n";
+			writeToFile(expr);
+		}
+	}
+	catch(UndeclaredVariable undeclaredVariable)
+	{
+		cout << undeclaredVariable.message << endl;
+	}
+	catch(BadIndex badIndex)
+	{
+		cout << badIndex.message << endl;
+	}
+	catch(UninitializedVariable unitializedVariable)
+	{
+		cout << unitializedVariable.message << endl;
+	}
+
+	clear();
 	flagNumber++;
 }
 

@@ -34,12 +34,15 @@ void yyerror(char const *);
 
 %token IF
 %token THEN
+%token ELSE
 %token ENDIF
 
 %token EQ
 %token NEQ
 %token LE
 %token GE
+%token LEQ
+%token GEQ
 
 %token <str> PIDENTIFIER
 %token <num> NUMBER
@@ -64,7 +67,8 @@ commands:
 
 command:
 	identifier {compiler -> placeToStore($1); compiler -> clear();} ASSIGN expression ';' {compiler -> assign($1, $4);}
-|	IF condition {compiler -> clear();} THEN commands ENDIF {compiler -> endIf();}
+|	IF condition /*{compiler -> clear();}*/ THEN commands {compiler -> addJump(); compiler -> endIf();} ELSE commands ENDIF {compiler -> endIf();}
+|	IF condition /*{compiler -> clear();}*/ THEN commands ENDIF {compiler -> endIf();}
 |	READ identifier ';' {compiler -> read($2);}
 |	WRITE value ';' {compiler -> write();}
 
@@ -81,6 +85,8 @@ condition:
 |	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} NEQ value {compiler -> evaluateExpression(); compiler -> condNeq();}
 |	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} LE value {compiler -> evaluateExpression(); compiler -> condLe();}
 |	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} GE value {compiler -> evaluateExpression(); compiler -> condGe();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} LEQ value {compiler -> evaluateExpression(); compiler -> condLeq();}
+|	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} GEQ value {compiler -> evaluateExpression(); compiler -> condGeq();}
 
 value:
 	NUMBER {compiler -> generateConstant($1); compiler -> setValueNumber();}
