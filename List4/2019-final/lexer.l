@@ -50,6 +50,13 @@ cmteat [^]]*
 "LEQ" {return LEQ;}
 "GEQ" {return GEQ;}
 
+"FOR" {return FOR;}
+"FROM" {return FROM;}
+"TO" {return TO;}
+"DO" {return DO;}
+"ENDFOR" {return ENDFOR;}
+
+
 [_a-z]+ {yylval.str = (char *)strdup(yytext); return PIDENTIFIER;}
 -?[0-9]+ {yylval.num = atoi(yytext); return NUMBER;}
 

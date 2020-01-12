@@ -11,6 +11,7 @@ using namespace std;
 extern SymbolsTable * symbolsTable;
 extern long long generatedLines;
 extern long long flagNumber;
+extern long long ifNested;
 
 //public
 Compiler::Compiler(FILE * file)
@@ -23,6 +24,7 @@ Compiler::Compiler(FILE * file)
 	valueNumber = false;
 	leftSideOption = 0;
 	jumpLocations = new vector<long long>();
+	nestedVector = new vector<long long>();
 }
 
 void Compiler::assign(string varIdentifier, long long value)
@@ -569,9 +571,17 @@ void Compiler::copy()
 	writeToFile(expr);
 }
 
+void Compiler:: forAsc()
+{
+	
+}
+
 void Compiler::replaceJumpLocations(FILE * outFile, FILE * file)
 {
 	char buff[255];
+	int j = 0; //added
+	int prev = -1;
+	//bool again = false;
 
 	while(!feof(file))
 	{
@@ -583,8 +593,50 @@ void Compiler::replaceJumpLocations(FILE * outFile, FILE * file)
 		{
 			string number = s.substr(found + 5, 10);
 			int i = stoi(number);
-			s.replace(found, 10, to_string(jumpLocations -> at(i)) + "\n");
+			//s.replace(found, 10, to_string(jumpLocations -> at(i)) + "\n");
+			//cout << "J: " << j << endl;
+			if(i == prev)
+			{
+				j--;
+			}
+			else
+			{
+				prev = i;
+			}
+
+			int val = nestedVector -> at(j);
+
+			for(int k = j + 1; k < nestedVector -> size(); k++)
+			{
+				if(nestedVector -> at(k) == val && jumpLocations -> at(k) == 0)
+				{
+					//cout << "break " << j << " " << k << endl;
+					
+					j++;
+					k = j;
+					continue;
+					//break;
+				}
+
+				if(nestedVector -> at(k) < val)
+				{					
+					j++;
+					k = j;
+					val = nestedVector -> at(j);
+					continue;
+				}
+
+				if(nestedVector -> at(k) == val && jumpLocations -> at(k) != 0)
+				{
+					//cout << "TU: " << buff << " " << j << " " << k << endl;
+					s.replace(found, 10, to_string(jumpLocations -> at(k)) + "\n");
+					//cout << nestedVector -> at(k) << " " << jumpLocations -> at(k) << endl;
+					j++;
+					break;
+				}
+			}
 		}
+		//again = false;
 
 		char cString[s.size() + 1];
 		strcpy(cString, s.c_str());
@@ -598,13 +650,33 @@ void Compiler::replaceJumpLocations(FILE * outFile, FILE * file)
 void Compiler::addJump()
 {
 	string expr = "JUMP #flag" + to_string(flagNumber) + "\n";
-	//flagNumber++;
+	flagNumber++;
 	writeToFile(expr);
+}
+
+void Compiler::printNest()
+{
+	for(int i = 0; i < nestedVector -> size(); i++)
+	{
+		cout << i << " Nested: " << nestedVector -> at(i) << " location: " << jumpLocations -> at(i) << endl;
+	}
 }
 
 void Compiler::endIf()
 {
-	//cout << generatedLines << endl;
+	//cout << "Nest: " << ifNested << endl;
+	nestedVector -> push_back(ifNested);
+	ifNested--;
+	//cout << generatedLines << " " << flagNumber << endl;
+	jumpLocations -> push_back(generatedLines);
+}
+
+void Compiler::endElse()
+{
+	//cout << "Nest: " << ifNested << endl;
+	//ifNested--;
+	nestedVector -> push_back(ifNested);
+	//cout << generatedLines << " " << flagNumber << endl;
 	jumpLocations -> push_back(generatedLines);
 }
 
@@ -618,6 +690,9 @@ void Compiler::condEq()
 		writeToFile(expr);
 		clear();
 		flagNumber++;
+		jumpLocations -> push_back(0);
+		ifNested++;
+		nestedVector -> push_back(ifNested);
 		return;
 	}
 
@@ -666,6 +741,9 @@ void Compiler::condEq()
 
 	clear();
 	flagNumber++;
+	jumpLocations -> push_back(0);
+	ifNested++;
+	nestedVector -> push_back(ifNested);
 }
 
 void Compiler::condNeq()
@@ -677,6 +755,9 @@ void Compiler::condNeq()
 		writeToFile(expr);
 		clear();
 		flagNumber++;
+		jumpLocations -> push_back(0);
+		ifNested++;
+		nestedVector -> push_back(ifNested);
 		return;
 	}
 
@@ -722,6 +803,9 @@ void Compiler::condNeq()
 
 	clear();
 	flagNumber++;
+	jumpLocations -> push_back(0);
+	ifNested++;
+	nestedVector -> push_back(ifNested);
 }
 
 void Compiler::condLe()
@@ -734,6 +818,9 @@ void Compiler::condLe()
 		writeToFile(expr);
 		clear();
 		flagNumber++;
+		jumpLocations -> push_back(0);
+		ifNested++;
+		nestedVector -> push_back(ifNested);
 		return;
 	}
 
@@ -782,6 +869,9 @@ void Compiler::condLe()
 
 	clear();
 	flagNumber++;
+	jumpLocations -> push_back(0);
+	ifNested++;
+	nestedVector -> push_back(ifNested);
 }
 
 void Compiler::condGe()
@@ -794,6 +884,9 @@ void Compiler::condGe()
 		writeToFile(expr);
 		clear();
 		flagNumber++;
+		jumpLocations -> push_back(0);
+		ifNested++;
+		nestedVector -> push_back(ifNested);
 		return;
 	}
 
@@ -842,65 +935,12 @@ void Compiler::condGe()
 
 	clear();
 	flagNumber++;
+	jumpLocations -> push_back(0);
+	ifNested++;
+	nestedVector -> push_back(ifNested);
 }
 
 void Compiler::condLeq()
-{
-	if(identifier == "")
-	{
-		string expr = "SUB 1\n";
-		expr += "JPOS #flag" + to_string(flagNumber) + "\n";
-		writeToFile(expr);
-		clear();
-		flagNumber++;
-		return;
-	}
-
-	try
-	{
-		if(symbolsTable -> checkIfArray(identifier) == true)
-		{
-			if(indexIdentifier != "")
-			{
-				symbolsTable -> checkIfDeclared(indexIdentifier);
-				symbolsTable -> checkIfInitialized(indexIdentifier);
-
-				string expr = "SUB 1\n";
-				expr += "JPOS #flag" + to_string(flagNumber) + "\n";
-				writeToFile(expr);
-			}
-			else
-			{
-				string expr = "SUB 1\n";
-				expr += "JPOS #flag" + to_string(flagNumber) + "\n";
-				writeToFile(expr);
-			}
-		}
-		else
-		{
-			string expr = "SUB 1\n";
-			expr += "JPOS #flag" + to_string(flagNumber) + "\n";
-			writeToFile(expr);
-		}
-	}
-	catch(UndeclaredVariable undeclaredVariable)
-	{
-		cout << undeclaredVariable.message << endl;
-	}
-	catch(BadIndex badIndex)
-	{
-		cout << badIndex.message << endl;
-	}
-	catch(UninitializedVariable unitializedVariable)
-	{
-		cout << unitializedVariable.message << endl;
-	}
-
-	clear();
-	flagNumber++;
-}
-
-void Compiler::condGeq()
 {
 	if(identifier == "")
 	{
@@ -909,6 +949,9 @@ void Compiler::condGeq()
 		writeToFile(expr);
 		clear();
 		flagNumber++;
+		jumpLocations -> push_back(0);
+		ifNested++;
+		nestedVector -> push_back(ifNested);
 		return;
 	}
 
@@ -954,6 +997,71 @@ void Compiler::condGeq()
 
 	clear();
 	flagNumber++;
+	jumpLocations -> push_back(0);
+	ifNested++;
+	nestedVector -> push_back(ifNested);
+}
+
+void Compiler::condGeq()
+{
+	if(identifier == "")
+	{
+		string expr = "SUB 1\n";
+		expr += "JPOS #flag" + to_string(flagNumber) + "\n";
+		writeToFile(expr);
+		clear();
+		flagNumber++;
+		jumpLocations -> push_back(0);
+		ifNested++;
+		nestedVector -> push_back(ifNested);
+		return;
+	}
+
+	try
+	{
+		if(symbolsTable -> checkIfArray(identifier) == true)
+		{
+			if(indexIdentifier != "")
+			{
+				symbolsTable -> checkIfDeclared(indexIdentifier);
+				symbolsTable -> checkIfInitialized(indexIdentifier);
+
+				string expr = "SUB 1\n";
+				expr += "JPOS #flag" + to_string(flagNumber) + "\n";
+				writeToFile(expr);
+			}
+			else
+			{
+				string expr = "SUB 1\n";
+				expr += "JNEG #flag" + to_string(flagNumber) + "\n";
+				writeToFile(expr);
+			}
+		}
+		else
+		{
+			string expr = "SUB 1\n";
+			expr += "JPOS #flag" + to_string(flagNumber) + "\n";
+			writeToFile(expr);
+		}
+	}
+	catch(UndeclaredVariable undeclaredVariable)
+	{
+		cout << undeclaredVariable.message << endl;
+	}
+	catch(BadIndex badIndex)
+	{
+		cout << badIndex.message << endl;
+	}
+	catch(UninitializedVariable unitializedVariable)
+	{
+		cout << unitializedVariable.message << endl;
+	}
+
+	clear();
+	flagNumber++;
+	jumpLocations -> push_back(0);
+	ifNested++;
+	nestedVector -> push_back(ifNested);
 }
 
 void Compiler::add()

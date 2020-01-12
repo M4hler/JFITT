@@ -60,6 +60,7 @@ int main(int argc, char ** argv)
 	fclose(outputFile);
 	fclose(out2);
 
+	//compiler -> printNest();
 	//remove("temporaryFile.txt");
 	//symbolsTable -> showTable();
 }

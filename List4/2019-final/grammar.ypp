@@ -44,6 +44,12 @@ void yyerror(char const *);
 %token LEQ
 %token GEQ
 
+%token FOR
+%token FROM
+%token TO
+%token DO
+%token ENDFOR
+
 %token <str> PIDENTIFIER
 %token <num> NUMBER
 
@@ -67,8 +73,9 @@ commands:
 
 command:
 	identifier {compiler -> placeToStore($1); compiler -> clear();} ASSIGN expression ';' {compiler -> assign($1, $4);}
-|	IF condition /*{compiler -> clear();}*/ THEN commands {compiler -> addJump(); compiler -> endIf();} ELSE commands ENDIF {compiler -> endIf();}
+|	IF condition /*{compiler -> clear();}*/ THEN commands {compiler -> addJump(); compiler -> endElse();} ELSE commands ENDIF {compiler -> endIf();}
 |	IF condition /*{compiler -> clear();}*/ THEN commands ENDIF {compiler -> endIf();}
+|	FOR PIDENTIFIER {symbolsTable -> varDeclaration($2)} FROM value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} TO value {compiler -> evaluareExpression(); compiler -> forAsc();} DO commands ENDFOR
 |	READ identifier ';' {compiler -> read($2);}
 |	WRITE value ';' {compiler -> write();}
 

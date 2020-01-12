@@ -23,6 +23,10 @@ public:
 	void setLeftSideOption(int);
 	void copy();
 
+	void printNest();
+
+	void forAsc();
+
 	void addJump();
 	void condEq();
 	void condNeq();
@@ -31,6 +35,7 @@ public:
 	void condLeq();
 	void condGeq();
 	void endIf();
+	void endElse();
 	void replaceJumpLocations(FILE *, FILE *);
 
 	void add();
@@ -49,6 +54,7 @@ private:
 	bool valueNumber;
 	int leftSideOption;
 	vector<long long> * jumpLocations;
+	vector<long long> * nestedVector;
 
 	void writeToFile(string);
 };
