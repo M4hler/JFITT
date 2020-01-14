@@ -8,17 +8,20 @@ BEGIN
 	n ASSIGN 23;
 	q ASSIGN 5;
 	w ASSIGN 1;
+
 	[generowanie nieposortowanej tablicy]
 	FOR i FROM b DOWNTO a DO
 		w  ASSIGN  w TIMES q;
 		w  ASSIGN  w MOD n;
 		tab(i)  ASSIGN  w;
 	ENDFOR
+
 	[wypisywanie nieposortowanej tablicy]
 	FOR i FROM a TO b DO
 		WRITE tab(i);
 	ENDFOR
 	WRITE 1234567890;
+
 	[sortowanie]
         q ASSIGN a PLUS 1;
 	FOR i FROM q TO b DO
@@ -36,6 +39,7 @@ BEGIN
 		ENDWHILE
 		tab(k)  ASSIGN  x;
 	ENDFOR
+
 	[wypisywanie posortowanej tablicy]
 	FOR i FROM a TO b DO
 		WRITE tab(i);

@@ -47,8 +47,12 @@ void yyerror(char const *);
 %token FOR
 %token FROM
 %token TO
+%token DOWNTO
 %token DO
 %token ENDFOR
+
+%token WHILE
+%token ENDWHILE
 
 %token <str> PIDENTIFIER
 %token <num> NUMBER
@@ -75,7 +79,9 @@ command:
 	identifier {compiler -> placeToStore($1); compiler -> clear();} ASSIGN expression ';' {compiler -> assign($1, $4);}
 |	IF condition /*{compiler -> clear();}*/ THEN commands {compiler -> addJump(); compiler -> endElse();} ELSE commands ENDIF {compiler -> endIf();}
 |	IF condition /*{compiler -> clear();}*/ THEN commands ENDIF {compiler -> endIf();}
-|	FOR PIDENTIFIER {symbolsTable -> varDeclaration($2)} FROM value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} TO value {compiler -> evaluareExpression(); compiler -> forAsc();} DO commands ENDFOR
+|	WHILE {compiler -> setWhileFlag();} condition DO commands ENDWHILE {compiler -> endWhile();}
+|	FOR PIDENTIFIER FROM value TO {symbolsTable -> varDeclaration($2); symbolsTable -> initVariable($2); compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();}value {compiler -> evaluateExpression(); compiler -> forAsc($2);} DO commands ENDFOR {compiler -> endFor($2);}
+|	FOR PIDENTIFIER FROM value DOWNTO {symbolsTable -> varDeclaration($2); symbolsTable -> initVariable($2); compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();}value {compiler -> evaluateExpression(); compiler -> forDesc($2);} DO commands ENDFOR {compiler -> endForDesc($2);}
 |	READ identifier ';' {compiler -> read($2);}
 |	WRITE value ';' {compiler -> write();}
 
@@ -96,8 +102,8 @@ condition:
 |	value {compiler -> evaluateExpression(); compiler -> copy(); compiler -> clear();} GEQ value {compiler -> evaluateExpression(); compiler -> condGeq();}
 
 value:
-	NUMBER {compiler -> generateConstant($1); compiler -> setValueNumber();}
-|	identifier {compiler -> setIdentifierFlag(); compiler -> setIdentifier($1);}
+	NUMBER {compiler -> whileJump(); compiler -> generateConstant($1); compiler -> setValueNumber();}
+|	identifier {compiler -> whileJump(); compiler -> setIdentifierFlag(); compiler -> setIdentifier($1);}
 
 identifier:
 	PIDENTIFIER {compiler -> setIdentifier($1);}

@@ -18,6 +18,7 @@ public:
 	void initVariable(string);
 	long long getFreeMemoryCell();
 	long long getArrayFirstIndex(string);
+	void deleteVar(string);
 
 private:
 	vector<string> * varName;

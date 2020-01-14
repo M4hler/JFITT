@@ -73,10 +73,13 @@ extern int yydebug;
     FOR = 279,
     FROM = 280,
     TO = 281,
-    DO = 282,
-    ENDFOR = 283,
-    PIDENTIFIER = 284,
-    NUMBER = 285
+    DOWNTO = 282,
+    DO = 283,
+    ENDFOR = 284,
+    WHILE = 285,
+    ENDWHILE = 286,
+    PIDENTIFIER = 287,
+    NUMBER = 288
   };
 #endif
 
@@ -89,7 +92,7 @@ union YYSTYPE
 	long long num;
 	const char * str;
 
-#line 93 "grammar.hpp"
+#line 96 "grammar.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

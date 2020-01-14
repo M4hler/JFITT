@@ -53,12 +53,15 @@ cmteat [^]]*
 "FOR" {return FOR;}
 "FROM" {return FROM;}
 "TO" {return TO;}
+"DOWNTO" {return DOWNTO;}
 "DO" {return DO;}
 "ENDFOR" {return ENDFOR;}
 
+"WHILE" {return WHILE;}
+"ENDWHILE" {return ENDWHILE;}
 
 [_a-z]+ {yylval.str = (char *)strdup(yytext); return PIDENTIFIER;}
--?[0-9]+ {yylval.num = atoi(yytext); return NUMBER;}
+-?[0-9]+ {yylval.num = atoll(yytext); return NUMBER;}
 
 \n {lineNumber++;}
 

@@ -32,6 +32,7 @@ void run_machine( std::vector< std::pair<int,long long> > & program )
   t = 0;
   while( program[lr].first != HALT )	// HALT
   {
+std::cout << lr << std::endl;
     switch( program[lr].first )
     {
       case GET:		std::cout << "? "; std::cin >> pam[0]; t+=100; lr++; break;

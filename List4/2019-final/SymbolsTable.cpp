@@ -196,6 +196,18 @@ long long SymbolsTable::getArrayFirstIndex(string varIdentifier)
 	}
 }
 
+void SymbolsTable::deleteVar(string varIdentifier)
+{
+	for(int i = 0; i < varName -> size(); i++)
+	{
+		if(varIdentifier == varName -> at(i))
+		{
+			varName -> at(i) = "";
+			return;
+		}
+	}
+}
+
 //private
 void SymbolsTable::checkIfAlreadyDeclared(string varIdentifier)
 {

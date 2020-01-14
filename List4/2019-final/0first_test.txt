@@ -1,36 +1,30 @@
-[ IF ]
+[ Rozklad liczby na czynniki pierwsze ]
 DECLARE
-	a, b, c(1:4), d
+    n, m, reszta, potega, dzielnik
 BEGIN
-	a ASSIGN 8;
-	b ASSIGN 9;
-	d ASSIGN 1;
-	
-	IF a LEQ b THEN
-		WRITE 10;
-
-		IF a LE b THEN
-			WRITE 20;
-
-			IF b GE a THEN
-				WRITE 30;
-			ENDIF
-
-			IF b GEQ a THEN
-				WRITE 40;
-			ENDIF
-		ELSE
-			WRITE -20;
-
-			IF b GE a THEN
-				WRITE 8;
-			ENDIF
-
-		ENDIF
-
-	ELSE
-		WRITE -10;
-	ENDIF
-
-	WRITE 0;
+    READ n;
+    dzielnik ASSIGN 2;
+    m ASSIGN dzielnik TIMES dzielnik;
+    WHILE n GEQ m DO
+        potega ASSIGN 0;
+        reszta ASSIGN n MOD dzielnik;
+        WHILE reszta EQ 0 DO
+            n ASSIGN n DIV dzielnik;
+            potega ASSIGN potega PLUS 1;
+            reszta ASSIGN n MOD dzielnik;
+        ENDWHILE
+WRITE -1;
+        IF potega GE 0 THEN [ czy znaleziono dzielnik ]
+            WRITE dzielnik;
+            WRITE potega;
+        ELSE
+            dzielnik ASSIGN dzielnik PLUS 1;
+WRITE dzielnik;
+            m ASSIGN dzielnik TIMES dzielnik;
+        ENDIF
+    ENDWHILE
+    IF n NEQ 1 THEN [ ostatni dzielnik ]
+        WRITE n;
+        WRITE 1;
+    ENDIF
 END

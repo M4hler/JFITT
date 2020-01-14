@@ -25,7 +25,14 @@ public:
 
 	void printNest();
 
-	void forAsc();
+	void forAsc(string);
+	void forDesc(string);
+	void endFor(string);
+	void endForDesc(string);
+
+	void endWhile();
+	void setWhileFlag();
+	void whileJump();
 
 	void addJump();
 	void condEq();
@@ -55,6 +62,20 @@ private:
 	int leftSideOption;
 	vector<long long> * jumpLocations;
 	vector<long long> * nestedVector;
+
+	vector<long long> * jumpForLocations;
+	vector<long long> * nestedFor;
+
+	vector<long long> * jumpForBackLocations;
+	vector<long long> * nestedForBack;
+
+	vector<long long> * jumpWhileLocations;
+	vector<long long> * nestedWhile;
+
+	vector<long long> * jumpWhileBackLocations;
+	vector<long long> * nestedWhileBack;
+
+	bool inWhileFlag;
 
 	void writeToFile(string);
 };
