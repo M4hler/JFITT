@@ -62,5 +62,5 @@ int main(int argc, char ** argv)
 
 	//remove("temporaryFile.txt");
 	symbolsTable -> showTable();
-	compiler -> printNest();
+	//compiler -> printNest();
 }

@@ -13,13 +13,11 @@ BEGIN
             potega ASSIGN potega PLUS 1;
             reszta ASSIGN n MOD dzielnik;
         ENDWHILE
-WRITE -1;
         IF potega GE 0 THEN [ czy znaleziono dzielnik ]
             WRITE dzielnik;
             WRITE potega;
         ELSE
             dzielnik ASSIGN dzielnik PLUS 1;
-WRITE dzielnik;
             m ASSIGN dzielnik TIMES dzielnik;
         ENDIF
     ENDWHILE

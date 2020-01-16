@@ -48,8 +48,11 @@ public:
 	void add();
 	void sub();
 	void mul();
+	void mulTest();
 	void div();
+	void divTest();
 	void mod();
+	void modTest();
 
 private:
 	FILE * output;
